@@ -1,9 +1,7 @@
 ## End to End ML project
 
 Step 1: Setting up github repository
-git init
-git add <file_name>
-git commit -m "<commit_message>"
+git init, git add <file_name>, git commit -m "<commit_message>"
 git branch -M main
 git remote add origin "<github_repository_link>"
 git push -u origin main
