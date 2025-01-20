@@ -1,34 +1,31 @@
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+from imblearn.over_sampling import SMOTE
 import pandas as pd
 import numpy as np
 import pickle
-from scipy.stats import boxcox
-from scipy.stats import skew
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.model_selection import train_test_split
+from scipy.stats import boxcox, skew
 
-
-data=pd.read_csv('D:\ML Project (Income Prediction)\income.csv')
+# Load the dataset
+data = pd.read_csv('D:\ML Project (Income Prediction)\income.csv')
 print(data.head())
 
 # Function to apply transformations based on skewness
 def transform_skewed_data(df):
-    for col in ['capital-gain','capital-loss']:
+    for col in ['capital-gain', 'capital-loss']:
         col_skewness = skew(df[col].dropna())
         
         if col_skewness > 1:  # Right-skewed (Positive skewness)
-            # Apply log transformation, handling any zero or negative values by adding a small constant
-            df[col] = np.log(df[col] + 1e-5)
+            df[col] = np.log(df[col] + 1e-5)  # Handle zero or negative values
             print(f"Applied log transformation to right-skewed column: {col}")
         
         elif col_skewness < -1:  # Left-skewed (Negative skewness)
-            # Apply reflect and log transformation
             df[col] = np.log(df[col].max() + 1 - df[col])
             print(f"Applied reflect and log transformation to left-skewed column: {col}")
         
         else:  # Both-sided skewed or near-symmetric
-            # Apply Box-Cox transformation, handling negative or zero values by shifting
             if (df[col] <= 0).any():
                 df[col] = df[col] - df[col].min() + 1  # Shift values to be positive
             df[col], _ = boxcox(df[col])
@@ -41,9 +38,9 @@ df = transform_skewed_data(data)
 
 # Split features and target
 categorical_features = df[['workclass', 'education', 'marital-status', 'occupation',
-       'relationship', 'race', 'sex', 'country']]
+                           'relationship', 'race', 'sex', 'country']]
 numerical_features = df[['age', 'fnlwgt', 'education-num', 'capital-gain', 'capital-loss',
-       'hours-per-week']]
+                         'hours-per-week']]
 target = data['salary']
 
 # One-Hot Encoding for categorical features
@@ -60,15 +57,22 @@ processed_features = pd.concat(
     axis=1
 )
 
-# Train a simple model
-model = GradientBoostingClassifier()
-model.fit(processed_features, target)
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(processed_features, target, test_size=0.2, random_state=42)
 
-X_train,X_test,y_train,y_test= train_test_split(processed_features,target, test_size=0.2,random_state=42)
-meow=GradientBoostingClassifier()
-meow.fit(X_train,y_train)
-accuracy=meow.score(X_test,y_test)
-print(f'This is the {accuracy} for meow model')
+# Apply SMOTE to the training data
+smote = SMOTE(random_state=42)
+X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
+print(f"Resampled training data shape: {X_train_resampled.shape}")
+
+# Train the model with resampled data
+model = GradientBoostingClassifier()
+model.fit(X_train_resampled, y_train_resampled)
+
+# Evaluate the model
+y_test_pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, y_test_pred)
+print(f'Testing accuracy: {accuracy}')
 
 # Save the model, encoder, and scaler
 pickle.dump(model, open('model.pkl', 'wb'))
