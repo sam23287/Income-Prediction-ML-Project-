@@ -9,7 +9,7 @@ import pickle
 from scipy.stats import boxcox, skew
 
 # Load the dataset
-data = pd.read_csv('D:\ML Project (Income Prediction)\income.csv')
+data = pd.read_csv('income.csv')
 print(data.head())
 
 # Function to apply transformations based on skewness

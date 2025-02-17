@@ -8,7 +8,7 @@ encoder = pickle.load(open('encoder.pkl', 'rb'))
 scaler = pickle.load(open('scaler.pkl', 'rb'))
 
 # Initialize Flask app
-app = Flask(__name__,template_folder='D:/ML Project (Income Prediction)/deployment/templates')
+app = Flask(__name__,template_folder=r'C:\Users\Shivam\Desktop\ML Project (Income Prediction)\deployment\templates')
 
 # Define the home route
 @app.route('/')
