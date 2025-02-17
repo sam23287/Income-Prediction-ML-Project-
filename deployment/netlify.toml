@@ -1,0 +1,16 @@
+[build]
+  publish = "."  # Current directory (or set it to 'build' if you are using a build process)
+  command = "pip install -r requirements.txt && gunicorn app:app"  # Install dependencies and start the Flask app
+
+[functions]
+  directory = "functions"  # Optional, if using serverless functions
+
+[context.production.environment]
+  FLASK_APP = "app.py"  # Flask app entry point
+  FLASK_ENV = "production"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = true
